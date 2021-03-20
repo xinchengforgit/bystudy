@@ -25,18 +25,28 @@ string upper(string str)
 	}
 	return str;
 }
-int main()
+void mycin()
 {
-	srand((unsigned int)time(NULL));
+	string temp;
+	rec="";
+	while(cin>>temp)
+	{
+		if(temp=="K"){
+			rec+=temp;
+			break;}
+		rec+=temp;
+		rec+="   ";
+	}
+}
+void imitate_human(string s)
+{
 	int r1,r2,r3;//随机数r1用来模拟人类发报时的随机抖动;随机数r2用来模拟人类发报时可能产生的错误  
-	init();
-    while(cin>>rec){
-    if(rec=="#")
-    	break;
-    rec=upper(rec);
-    for (int i = 0; i < rec.size(); i++)
-        po += m.find(rec[i])->second;
-    po+="   ";
+	 s=upper(s);
+    for (int i = 0; i < s.size(); i++){
+    	if(s[i]==' ')
+    	po+=' ';
+    	else
+    	po+=m.find(s[i])->second;
 	}
    	int t1=528,s_time=333;
    	char op;
@@ -53,12 +63,12 @@ int main()
 	   }
 	int mark=-1;//当i==mark时表示人此时发现自己已经有字母的摩斯电码发错了 
 	//模拟人类发报的过程 
-   	for(int i=0;i<po.size()-3;i++)
+   	for(int i=0;i<po.size();i++)
    	{
    		if(i==mark){
    			for(int j=1;j<=8;j++){
    				cout<<'.';
-   				Beep(t1,500);
+   				Beep(t1,300);
 			   }
 			cout<<"   ";
 			Sleep(1000);
@@ -69,31 +79,38 @@ int main()
    			r2=rand()%(200-(int)(i*0.4)); 
    			if(r2==1){
    			r3=rand()%3+1; 
-   			mark=min(r3+i,(int)po.size()-4);
+   			mark=min(r3+i,(int)po.size());
    			cout<<'-';
-   			Beep(t1,800);
+   			Beep(t1,600);
 			   }
 			else{
 			cout<<po[i];
-   			Beep(t1,500);}}
+   			Beep(t1,300);}}
    		else if(po[i]=='-'){
    			r2=rand()%(200-(int)(i*0.4));
    			if(r2==1){
    			r3=rand()%3+1; 
    			if(mark>0)
    				//如果之前已有一个字母发错，且还未发现,此时又按错了一个键,那么再度随机出来的mark必须要<=那个mark
-   				mark=min(min(mark,r3+i),(int)po.size()-4); 
+   				mark=min(min(mark,r3+i),(int)po.size()); 
 			else
-				mark=min(r3+i,(int)po.size()-4); 
+				mark=min(r3+i,(int)po.size()); 
 			   cout<<'.';
-			   Beep(t1,500);}
+			   Beep(t1,300);}
 			else{
    			cout<<po[i];
-   			Beep(t1,800);}}
+   			Beep(t1,600);}}
    		else{
    			cout<<" "; 
-   			r1=rand()%10;
+   			r1=rand()%5;
    			Sleep(s_time+r1*100);}
 	   }
+}
+int main()
+{
+	srand((unsigned int)time(NULL)); 
+	mycin();
+	init();
+   	imitate_human(rec);
     system("pause");
 }
