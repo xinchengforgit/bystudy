@@ -8,6 +8,12 @@
 using namespace std;
 map<char, string> m;
 string rec, po;
+string str1;//呼叫 
+string name;
+string ans_name;
+int T_level;
+int user_judge;
+bool judgement=false;
 //初始化摩斯密码与字符的map 
 void init()
 {
@@ -25,18 +31,25 @@ string upper(string str)
 	}
 	return str;
 }
-void mycin()
+string mycin()
 {
 	string temp;
-	rec="";
+	string str="";
 	while(cin>>temp)
 	{
 		if(temp=="K"){
-			rec+=temp;
+			str+=temp;
 			break;}
-		rec+=temp;
-		rec+="   ";
+		str+=temp;
+		str+=" ";
 	}
+	return str;
+}
+//产生随机的音调 
+int random_pitch()
+{
+	int r=rand()%9;//产生一个声调偏移的范围 
+	return 9-r;
 }
 void imitate_human(string s)
 {
@@ -44,12 +57,12 @@ void imitate_human(string s)
 	 s=upper(s);
     for (int i = 0; i < s.size(); i++){
     	if(s[i]==' ')
-    	po+=' ';
+    	po+="   ";
     	else
     	po+=m.find(s[i])->second;
 	}
    	int t1=528,s_time=333;
-   	char op;
+   	/*char op;
    	printf("请问是否需要手动调节频率(1代表低，2代表中，3代表高)，时间(1代表快，2代表慢).\n输入(Y/N)\n");
    	cin>>op;
    	if(op=='Y'||op=='y'){
@@ -60,15 +73,17 @@ void imitate_human(string s)
 		if(n1==3)   t1=800;
 		if(n2==1)   s_time=200;
 		if(n2==2)   s_time=333;
-	   }
+	   }*/
 	int mark=-1;//当i==mark时表示人此时发现自己已经有字母的摩斯电码发错了 
 	//模拟人类发报的过程 
+	int r4=random_pitch();//表示当前的信号音调 
+	T_level=r4;
    	for(int i=0;i<po.size();i++)
    	{
    		if(i==mark){
    			for(int j=1;j<=8;j++){
    				cout<<'.';
-   				Beep(t1,300);
+   				Beep(t1+(rand()%10)*(9-r4),60);
 			   }
 			cout<<"   ";
 			Sleep(1000);
@@ -76,18 +91,18 @@ void imitate_human(string s)
 		   }
    		if(po[i]=='.'){
    			//r2是一个随机数，如果r2==1则表示人类此时出现了错误,此处是为了模拟时间增长，人犯错的概率增大
-   			r2=rand()%(200-(int)(i*0.4)); 
+   			r2=rand()%(300-(int)(i*0.4)); 
    			if(r2==1){
    			r3=rand()%3+1; 
    			mark=min(r3+i,(int)po.size());
    			cout<<'-';
-   			Beep(t1,600);
+   			Beep(t1+(rand()%10)*(9-r4),200);
 			   }
 			else{
 			cout<<po[i];
-   			Beep(t1,300);}}
+   			Beep(t1+(rand()%10)*(9-r4),60);}}
    		else if(po[i]=='-'){
-   			r2=rand()%(200-(int)(i*0.4));
+   			r2=rand()%(300-(int)(i*0.4));
    			if(r2==1){
    			r3=rand()%3+1; 
    			if(mark>0)
@@ -96,21 +111,61 @@ void imitate_human(string s)
 			else
 				mark=min(r3+i,(int)po.size()); 
 			   cout<<'.';
-			   Beep(t1,300);}
+			   Beep(t1+(rand()%10)*(9-r4),60);}
 			else{
    			cout<<po[i];
-   			Beep(t1,600);}}
+   			Beep(t1+(rand()%10)*(9-r4),200);}}
    		else{
    			cout<<" "; 
    			r1=rand()%5;
-   			Sleep(s_time+r1*100);}
+   			Sleep(100+r1*100);}
 	   }
+}
+
+string request()
+{
+	str1=mycin();
+	for(int i=12;i<str1.size();i++)
+		if(str1[i]==' ')
+		 	break;
+		else 
+		 	name+=str1[i];
+	cout<<"填写对方回应的呼号"<<endl;
+	cin>>ans_name;
+	string ans_=name+" DE "+ans_name+" "+ans_name+" "+ans_name+" K";
+	return ans_;
+}
+string exchange()
+{
+	cout<<"请填写自己的信号报告"<<endl;
+	string rp_1=mycin();
+	user_judge=rp_1[24]-'0';
+	cout<<user_judge<<endl;
+	cout<<"请填写对方的信号报告"<<endl;
+	string rp_2=mycin(); 
+	if(user_judge==T_level)
+	   judgement=true;//在判断正确时修改 
+	return rp_2;
 }
 int main()
 {
 	srand((unsigned int)time(NULL)); 
-	mycin();
+	rec=request();
 	init();
+	cout<<"响应为:"<<rec<<endl;
    	imitate_human(rec);
+   	while(1){
+   	rec=exchange();
+   	Sleep(rand()%3*1000);//随机延迟一段时间 
+   	cout<<"响应为:"<<rec<<endl; 
+   	imitate_human(rec);
+   	if(judgement)
+   		cout<<"\nYour judgement is true\n";
+   	else
+   	 	cout<<"\nYour judgement is false,and the T_lever is "<<T_level<<endl;
+   	if(rec.find("TNX 73 K")!=rec.npos)
+   		break;
+	   }
+	cout<<ans_name<<" DE "<<name<<" THX 73 K"<<endl; 
     system("pause");
 }
