@@ -23,5 +23,40 @@ mirai-login-solver-selenium安装步骤 (需要先安装 Chrome 浏览器)
 
 安装完成后，就能实现基本的登陆了
 
+#### 3.python pip安装graia-application-mirai
 
+ 实现后，将setting.xml内的东西改为自己所需要的，然后复制官方文档下的代码
+
+~~~
+from graia.broadcast import Broadcast
+from graia.application import GraiaMiraiApplication, Session
+from graia.application.message.chain import MessageChain
+import asyncio
+
+from graia.application.message.elements.internal import Plain
+from graia.application.friend import Friend
+
+loop = asyncio.get_event_loop()
+
+bcc = Broadcast(loop=loop)
+app = GraiaMiraiApplication(
+    broadcast=bcc,
+    connect_info=Session(
+        host="http://localhost:8080", # 填入 httpapi 服务运行的地址
+        authKey="graia-mirai-api-http-authkey", # 填入 authKey
+        account=, # 你的机器人的 qq 号
+        websocket=True # Graia 已经可以根据所配置的消息接收的方式来保证消息接收部分的正常运作.
+    )
+)
+
+@bcc.receiver("FriendMessage")
+async def friend_message_listener(app: GraiaMiraiApplication, friend: Friend):
+    await app.sendFriendMessage(friend, MessageChain.create([
+        Plain("Hello, World!")
+    ]))
+
+app.launch_blocking()
+~~~
+
+就能够实现qbot发送hello,xxx的功能了
 
