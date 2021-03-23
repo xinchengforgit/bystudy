@@ -22,10 +22,6 @@ def card_init():
                   all_cards.append("E%d" %i)
         random.shuffle(all_cards)
 #以上是对初始麻将牌的操作
-card_init()
-
-
-
 
 
 
@@ -69,7 +65,6 @@ def  init():
                 playerlist[i].cards.sort()
                 print(playerlist[i].cards)
 
-init()
 #实现每个玩家的摸牌阶段
 def take_your_card(cur):
     new_card=all_cards.pop()
@@ -141,6 +136,8 @@ def is_hu(cur,out_card):  ###就是准备要胡牌的玩家
         return False #如果上述遍历没有返回和牌成功，则需要返回和牌失败
 
 
+
+#### 出完牌后，看看有没有玩家能够碰或者吃
 def wait(cur,out_card):
     for i in range(1,4):
         temp_list = []
@@ -245,7 +242,8 @@ def play_games():
               del playerlist[cur].cards[id]
           cur=(cur+1)%4
           print("当前牌堆还剩下%d张牌"%len(all_cards))###一轮打牌结束
-
+card_init()
+init()
 play_games()
 
 
