@@ -1,15 +1,5 @@
-#####写在前面，因为这个文件不知道是pycharm的原因还是什么不可抗力，在我今晚打开时莫名出现了奇怪的乱码，
-#####但是我限于网络原因，在git上提交的版本时昨天的，所以我被迫重新更正了一下我写的代码QAQ，惨痛的经历2021-3-23晚
-
 import json
-
-
 import random
-<<<<<<< HEAD
-=======
-import functools
-import 胡牌判定
->>>>>>> 29a75bfc54e4b3a0af4daf06986cf23f8362a5ce
 #首先要有一个存放麻将牌的东西
 
 all_cards=[]
@@ -32,13 +22,10 @@ def card_init():
                   all_cards.append("E%d" %i)
         random.shuffle(all_cards)
 #以上是对初始麻将牌的操作
-<<<<<<< HEAD
-=======
-card_init()
 
 
 
->>>>>>> 29a75bfc54e4b3a0af4daf06986cf23f8362a5ce
+
 
 
 
@@ -82,6 +69,7 @@ def  init():
                 playerlist[i].cards.sort()
                 print(playerlist[i].cards)
 
+
 #实现每个玩家的摸牌阶段
 def take_your_card(cur):
     new_card=all_cards.pop()
@@ -96,12 +84,7 @@ def take_your_card(cur):
         else:
             return 0
 #实现每个玩家的出牌阶段
-<<<<<<< HEAD
 def out_your_card(cur):
-=======
-def get_your_card(cur):
-    playerlist[cur].cards.append(all_cards.pop())
->>>>>>> 29a75bfc54e4b3a0af4daf06986cf23f8362a5ce
     print("%d号玩家，现在是你的出牌阶段," %cur)
     print('你此时的牌是:\n')
     print(playerlist[cur].cards)
@@ -116,7 +99,6 @@ def get_your_card(cur):
           print("%d号玩家：" % ((cur + i) % 4), end="")
           print(playerlist[(cur+i)%4].vice_cards)
     out_card=input("请输入你想要打出的牌")
-<<<<<<< HEAD
     playerlist[cur].outcards.append(out_card)
     playerlist[cur].cards.remove(out_card)
     playerlist[cur].cards.sort()
@@ -126,17 +108,6 @@ def is_hu(cur,out_card):  ###就是准备要胡牌的玩家
     d=[]
     for i in playerlist[cur].cards:
         d.append(dict[i])
-=======
-    id=playerlist[cur].cards.index(out_card)
-    playerlist[cur].outcards.append(out_card)
-    del playerlist[cur].cards[id]
-    playerlist[cur].cards.sort()
-    return out_card
-#判定能不能胡牌
-def is_hu(cur,out_card):
-    d=[]
-    for()
->>>>>>> 29a75bfc54e4b3a0af4daf06986cf23f8362a5ce
     if(len(d)%3!=2):
         return False  #不是3n+2型，胡牌失败
     double=[] #检测对子
@@ -169,10 +140,7 @@ def is_hu(cur,out_card):
     else:
         return False #如果上述遍历没有返回和牌成功，则需要返回和牌失败
 
-<<<<<<< HEAD
 
-
-#### 出完牌后，看看有没有玩家能够碰或者吃
 def wait(cur,out_card):
     for i in range(1,4):
         temp_list = []
@@ -277,72 +245,6 @@ def play_games():
               del playerlist[cur].cards[id]
           cur=(cur+1)%4
           print("当前牌堆还剩下%d张牌"%len(all_cards))###一轮打牌结束
+init()
 card_init()
-init()
-play_games()
-
-=======
-
-def wait(cur,out_card):
-    for i in range(1,4):
-        temp_list = []
-        for j in playerlist[(i+cur)%4].cards:
-            temp_list.append(dict[j])
-        if temp_list.count(dict[out_card])>=2:
-            print("%d号玩家:你现在的牌是:" %((cur+i)%4),end="")
-            print(playerlist[(cur+i)%4].cards)
-            chio=input("您可以选择碰,要碰吗(y or n)\n")
-            if chio=='y':
-                playerlist[(i+cur)%4].vice_cards.append(out_card)
-                playerlist[(i+cur) % 4].vice_cards.append(out_card)
-                playerlist[(i+cur) % 4].vice_cards.append(out_card)
-                playerlist[i].outcards.remove(out_card)
-                return (i+cur)%4    #如果碰后，那么牌河的牌要被移除
-            elif chio=='n':
-                continue
-            else:
-                print("输入不合法,默认跳过(滑稽)\n")
-                continue
-    ####接下来判断吃
-    now=(cur+1)%4
-    tp_list=[]
-    for j in playerlist[now].cards:
-        tp_list.append(dict[j])
-    if
-    return -1
->>>>>>> 29a75bfc54e4b3a0af4daf06986cf23f8362a5ce
-
-
-def play_games():
-    cur=p_num
-    while (len(all_cards)>0):
-          out_card=get_your_card(cur)
-          for i in range(3):
-              if is_hu((i+cur)%4,out_card):
-                  choose=input("你可以选择是否胡牌(y or n)\n")
-                  if choose=='y':
-                     print("游戏结束,%d号玩家胡牌" %((cur+i)%4))
-                     return (cur+i)%4
-                  else:
-                     continue
-          temp=wait(cur,out_card)
-          if temp!=-1:
-              cur=temp #现在轮到这个人打出牌
-              print('你此时的牌是:\n')
-              print(playerlist[cur].cards)
-              print('场上玩家依次打出的牌是:\n')
-              for i in range(4):
-                  if (playerlist[(cur + i) % 4].outcards):
-                      print(playerlist[(cur + i) % 4].outcards + '\n')
-              print('场上玩家的副露区牌依次是:\n')
-              for i in range(4):
-                  if (playerlist[(cur + i) % 4].vice_cards):
-                      print(playerlist[(cur + i) % 4].vice_cards)
-              out_card = input("请输入你想要打出的牌")
-              id = playerlist[cur].cards.index(out_card)
-              playerlist[cur].outcards.append((playerlist[cur].outcards))
-              del playerlist[cur].cards[id]
-          cur=(cur+1)%4   ###一轮打牌结束
-
-init()
 play_games()

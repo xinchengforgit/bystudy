@@ -2,6 +2,7 @@ from graia.broadcast import Broadcast
 from graia.application import GraiaMiraiApplication, Session
 from graia.application.message.chain import MessageChain
 import asyncio
+import test
 
 from graia.application.message.elements.internal import Plain,Source,At
 from graia.application.friend import Friend
@@ -48,18 +49,55 @@ async def friend_message_listener(app: GraiaMiraiApplication, friend: Friend, me
 
 
 
-@bcc.receiver('GroupMessage')
-async def group_message_listener(app: GraiaMiraiApplication,group:Group):
-    await app.sendGroupMessage(group,MessageChain.create([
-        Plain("this is test bot"),At(2240131203)
-    ]))
+# @bcc.receiver('GroupMessage')
+# async def group_message_listener(app: GraiaMiraiApplication,group:Group,member:Member):
+    # await app.sendGroupMessage(group,MessageChain.create([
+    #     Plain("this is test bot"),At(2240131203)
+    # ]))
+
+# @bcc.receiver("GroupMessage")
+# async def groupMessage(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain):
+    # message_str=message.json()
+    # print(message)
+    # print(member.name)
+    #
+    #
+    # with open("majhong.json",'w') as f:
+    #     for i in message_str:
+    #         f.write(i)
+async def game_is_continue():
+        pass
+async def game_start(app: GraiaMiraiApplication, group: Group, message: MessageChain):
+    message_str = message.asDisplay()
+    print(message_str)
+    if message_str == "?@" + str(app.connect_info.account) + " ":
+            await app.sendGroupMessage(group, MessageChain.create([
+            Plain("还在测试中\n 2")
+        ]))
+
 
 @bcc.receiver("GroupMessage")
-async def groupMessage(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain):
-    message_str=message.json()
-    with open("majhong.json",'w') as f:
-        for i in message_str:
-            f.write(i)
+def help_game(app:GraiaMiraiApplication, group: Group, member: Member, message: MessageChain):
+    if
+
+
+
+
+@bcc.receiver("GroupMessage")
+async def start_game(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain):
+        message_str=message.asDisplay()
+        print(group.id)
+        print(message_str)
+        temp_str="开始游戏@"+str(app.connect_info.account)+" " #草有个空格的
+        if message_str==temp_str:
+            await app.sendGroupMessage(group,MessageChain.create([
+                Plain("游戏开始，请输入？@bot来查看游戏帮助.  "),
+                At(member.id)
+           ]))
+
+
+
+
 
 
 app.launch_blocking()
