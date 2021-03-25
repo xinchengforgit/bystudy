@@ -2,34 +2,17 @@ from graia.broadcast import Broadcast
 from graia.application import GraiaMiraiApplication, Session
 from graia.application.message.chain import MessageChain
 import asyncio
-import test
+import pymysql
 
 from graia.application.message.elements.internal import Plain, Source, At
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import json
 import random
 #首先要有一个存放麻将牌的东西
+conn=pymysql.connect(host='localhost',user='root',password='',database='bystudy')
+cursor=conn.cursor()
 
 all_cards=[]
 #饼万索风花为ABCDE
@@ -99,41 +82,6 @@ def  init():
                 print(playerlist[i].cards)
 
 
-#实现每个玩家的摸牌阶段
-def take_your_card(cur):
-    new_card=all_cards.pop()
-    if is_hu(cur,new_card):
-        playerlist[cur].cards.append(new_card)
-        print("%d号玩家,你现在的牌是:" % (cur), end="")
-        print(playerlist[cur].cards)
-        choose = input("你可以选择是否胡牌(y or n)\n")
-        if choose=='y':
-            print("游戏结束,%d号玩家胡牌" %cur)
-            return 1
-        else:
-            return 0
-    else:
-        playerlist[cur].cards.append(new_card)
-#实现每个玩家的出牌阶段
-def out_your_card(cur):
-    print("%d号玩家，现在是你的出牌阶段," %cur)
-    print('你此时的牌是:\n')
-    print(playerlist[cur].cards)
-    print('场上玩家依次打出的牌是:\n')
-    for i in range(4):
-        if(playerlist[(cur+i)%4].outcards):
-          print("%d号玩家：" %((cur+i)%4),end="")
-          print(playerlist[(cur+i)%4].outcards)
-    print('场上玩家的副露区牌依次是:\n')
-    for i in range(4):
-        if(playerlist[(cur+i)%4].vice_cards):
-          print("%d号玩家：" % ((cur + i) % 4), end="")
-          print(playerlist[(cur+i)%4].vice_cards)
-    out_card=input("请输入你想要打出的牌")
-    playerlist[cur].outcards.append(out_card)
-    playerlist[cur].cards.remove(out_card)
-    playerlist[cur].cards.sort()
-    return out_card
 #判定能不能胡牌
 def is_hu(cur,out_card):  ###就是准备要胡牌的玩家
     d=[]
@@ -183,127 +131,6 @@ def is_chi(cur,out_card):
     if (num + 1 in d and num + 2 in d) or (num - 1 in d and num + 1 in d) or ( num-1 in d and num-2 in d):
         return True
     return False
-
-
-def wait(cur,out_card):
-    for i in range(1,4):
-        temp_list = []
-        for j in playerlist[(i+cur)%4].cards:
-            temp_list.append(dict[j])
-        if temp_list.count(dict[out_card])>=2:
-            print("%d号玩家:你现在的牌是:" %((cur+i)%4),end="")
-            print(playerlist[(cur+i)%4].cards)
-            chio=input("您可以选择碰,要碰吗(y or n)\n")
-            if chio=='y':
-                playerlist[(i+cur)%4].vice_cards.append(out_card)
-                playerlist[(i+cur) % 4].vice_cards.append(out_card)
-                playerlist[(i+cur) % 4].vice_cards.append(out_card)
-                playerlist[(i+cur) %4].cards.remove(out_card)
-                playerlist[(i+cur) %4].cards.remove(out_card)
-                playerlist[cur].outcards.remove(out_card)
-                playerlist[(i+cur)%4].vice_cards.sort()
-                return (i+cur)%4    #如果碰后，那么牌河的牌要被移除
-            elif chio=='n':
-                continue
-            else:
-                print("输入不合法,默认跳过(滑稽)\n")
-                continue
-    now=(cur+1)%4
-    tp_list=[]
-    num=dict[out_card]
-    for j in playerlist[now].cards:
-        tp_list.append(dict[j])
-    if (num+1 in tp_list and  num+2 in tp_list) or (num-1 in tp_list and num+1 in tp_list) or (num-1 in tp_list and num-2 in tp_list) :
-        print("%d号玩家你现在的牌是:" %(now) ,end="")
-        print(playerlist[now].cards)
-        chio=input("你现在可以吃上家的牌，要吃吗\n")
-        if chio=='y':
-            while 1:
-                print("请输入你要用来吃上家的牌")
-                a=input()
-                b=input()  ###此处要修改
-                card_a=dict[a]
-                card_b=dict[b]
-                judge_list=[]
-                judge_list.append(card_a)
-                judge_list.append(card_b)
-                judge_list.append(num)
-                judge_list.sort()
-                if judge_list[0]==judge_list[1]-1 and judge_list[1] ==judge_list[2]-1:
-                    playerlist[cur].outcards.remove(out_card)
-                    playerlist[now].vice_cards.append(a)
-                    playerlist[now].vice_cards.append(b)
-                    playerlist[now].vice_cards.append(out_card)
-                    playerlist[now].cards.remove(a)
-                    playerlist[now].cards.remove(b)
-                    playerlist[now].vice_cards.sort() ##洗一下牌好点
-                    return now
-                else:
-                    print("输入不合法,请重新输入")
-        else:
-            pass
-
-    return -1
-
-
-
-
-
-
-
-
-def play_games():
-    cur=p_num
-    while (len(all_cards)>0):
-          if take_your_card(cur):
-              return cur
-          out_card=out_your_card(cur)
-          for i in range(3):
-              if is_hu((i+cur)%4,out_card):
-                  print("%d号玩家,你现在的牌是:" %((cur+i)%4),end="")
-                  print(playerlist[(i+cur)%4].cards)
-                  choose=input("你可以选择是否胡牌(y or n)\n")
-                  if choose=='y':
-                     print("游戏结束,%d号玩家胡牌" %((cur+i)%4))
-                     return (cur+i)%4
-                  else:
-                     continue
-          temp=wait(cur,out_card)
-          if temp!=-1:
-              cur=temp #现在轮到这个人打出牌
-              print('你此时的牌是:\n')
-              print(playerlist[cur].cards)
-              print('场上玩家依次打出的牌是:\n')
-              for i in range(4):
-                  if (playerlist[(cur + i) % 4].outcards):
-                      print("%d号玩家：" % ((cur + i) % 4), end="")
-                      print(playerlist[(cur + i) % 4].outcards)
-              print('场上玩家的副露区牌依次是:\n')
-              for i in range(4):
-                  if (playerlist[(cur + i) % 4].vice_cards):
-                      print("%d号玩家：" % ((cur + i) % 4), end="")
-                      print(playerlist[(cur + i) % 4].vice_cards)
-              out_card = input("请输入你想要打出的牌")
-              playerlist[cur].outcards.append(out_card)
-              playerlist[cur].cards.remove(out_card)
-              del playerlist[cur].cards[id]
-          cur=(cur+1)%4
-          print("当前牌堆还剩下%d张牌"%len(all_cards))###一轮打牌结束
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 hu_queue=[False,False,False,False]
 chi_queue=[False,False,False,False]
@@ -437,11 +264,14 @@ async def help_game(app: GraiaMiraiApplication, group: Group, member: Member, me
             ]))
             await app.sendGroupMessage(group, MessageChain.create(
                 [
-                    Plain("麻将规则很简单,见bygroup实习手册上写的\n"),
-                    Plain('现在有请各位玩家加入游戏，请输入 "加入游戏@bot" 来加入游戏,当加入游戏的玩家等于四人时，游戏将开始')
+                    Plain("首先需要规范用户的输入，限于本人的技术力问题，请你打牌时务必遵守上述规则\n"),
+                    Plain("当场上有人打出牌而你可以碰或吃的时候，你只有5s的时间选择，否则bot将会默认你不选择吃\n"),
+                    Plain("此外关于吃和碰的输出规范\n   "),
+                    Plain("如果你选择吃，请你务必以'y card1 card2'的规则向bot发话,否则可能会产生bugQAQ   "),
+                    Plain("如果你选择碰，你只需要打出' y '即可 ")
                 ]
-
             ))
+
 
 
 @bcc.receiver("GroupMessage")
@@ -475,6 +305,17 @@ async def out_card(app:GraiaMiraiApplication,friend:Friend,message:MessageChain)
                                 Plain("胡牌了，游戏结束")
                             ]
                         ))   ####自摸的情况
+                        sql='''
+                        insert into pfd(
+                        p1,p2,p3,p4,winner
+                        )values (%s,%s,%s,%s,%s)
+                        ''' %(str(playerqueue[0]),str(playerqueue[1]),str(playerqueue[2]),str(playerqueue[3]),str(friend.id))
+                        try :
+                            cursor.execute(sql)
+                            conn.comit()
+                        except:
+                            conn.rollback()
+
                         run_game==False
                         start_game==False ###游戏结束后，将状态改回来即可
             else:
@@ -519,96 +360,86 @@ async def out_card(app:GraiaMiraiApplication,friend:Friend,message:MessageChain)
                                     Plain("以下玩家胡牌:\n")
                                 ]
                                 )
-                            for i in range(0, 3):
+                            for i in range(1,4):
                                 if hu_queue[(i + cur) % 4] == True:
                                     messagechain_hu.plus(MessageChain.create([
                                         At(playerqueue[(i + cur) % 4])
                                     ]))
                             await app.sendGroupMessage(groupqueue[0], messagechain_hu)
+                            s=''
+                            for i in range(0,3):
+                                if hu_queue[(cur+i)%4]==True:
+                                    s=s+str(playerqueue[(cur+i)%4])
+                            sql='''
+                                    insert into pfd(
+                                    p1,p2,p3,p4,winner
+                                     )values (%s,%s,%s,%s,%s)
+                                ''' %(str(playerqueue[0]),str(playerqueue[1]),str(playerqueue[2]),str(playerqueue[3]),s)
+
+                        
                             run_game == False
                             start_game == False
                     #####再判断玩家能否碰牌
-                    for i in range(0,3):
+                    for i in range(1,4):
                         if is_peng((i+cur)%4,message_str):
                             peng_queue[(i+cur)%4]=True
+                            peng_temp=(i+cur)%4
                             await app.sendFriendMessage(playerqueue[(i+cur)%4],MessageChain.create(
                                 [
-                                    Plain("你现在可以碰，要碰吗(y or n)，你有5s")
+                                    Plain("你现在可以碰，要碰吗(y or n)，你有10s")
                                 ]
                             ))
+                            print((i+cur)%4)
                             await asyncio.sleep(5)
-                            peng_queue[(i+cur)%4]=False
-                            await app.sendFriendMessage(playerqueue[(i+cur)%4],MessageChain.create(
-                                [
-                                    Plain("时间到")
-                                ]
-                            ))
+                            # peng_queue[(i+cur)%4]=False
+                            # await app.sendFriendMessage(playerqueue[(i+cur)%4],MessageChain.create(
+                            #     [
+                            #         Plain("时间到")
+                            #     ]
+                            # ))
                     if True in peng_queue:
-                        await asyncio.sleep(5)  ####等待5s，看看有没有人碰
-                        if peng_queue[cur]==True:
-                            await app.sendFriendMessage(playerqueue[cur], MessageChain.create(
-                                [
-                                    Plain("现在是你的出牌阶段,你的牌是:"),
-                                    Plain(str(playerlist[cur].cards))
-                                ]
-                            ))
-                            peng_queue[cur]=False
+                        # await asyncio.sleep(10)  ####等待5s，看看有没有人
+                        await app.sendFriendMessage(playerqueue[peng_temp],MessageChain.create(
+                           [
+                               Plain("现在是你的出牌阶段"),
+                               Plain(str(playerlist[peng_temp].cards))
+                           ]
+                        ))
+                        cur=peng_temp
+                        peng_queue[cur]=False
+                    else:
+
+                        if is_chi((cur+1)%4,message_str):
+                                chi_queue[(1+cur) % 4] = True
+                                await app.sendFriendMessage(playerqueue[(1+cur) % 4], MessageChain.create(
+                                    [
+                                        Plain("你现在可以吃，要吃吗(y or n)，你有5s")
+                                    ]
+                                ))
+                                await asyncio.sleep(10)
+                            # chi_queue[(1+cur)%4]=False,这个地方需要修改
+                            # await app.sendFriendMessage(playerqueue[(1 + cur) % 4], MessageChain.create(
+                            #     [
+                            #         Plain("时间到")
+                            #     ]
+                            # ))
+                        if True in chi_queue:  ####等待5s，看看有没有人吃
+                                 await app.sendFriendMessage(playerqueue[(1+cur)%4],MessageChain.create(
+                                     [
+                                         Plain("现在是你的出牌阶段"),
+                                         Plain(str(playerlist[(1+cur)%4].cards))
+                                     ]
+                                 ))
+                                 chi_queue[(1+cur)%4]=False
+                                 cur=(cur+1)%4
                         else:
-                            temp=cur
-                            cur=(cur+1)%4 #没人碰就顺着下去
-                            playerlist[cur].cards.append(all_cards.pop())
-                            await  app.sendFriendMessage(playerqueue[cur],MessageChain.create([
-                                Plain("现在是你的出牌阶段"),
-                                Plain("您现在的手牌是(最右边的那张是新摸的牌)："),
-                                Plain(str(playerlist[cur].cards))]
-                            ))
-                            peng_queue[temp]=False
-                    if is_chi((cur+1)%4,message_str):
-                            chi_queue[(1+cur) % 4] = True
-                            await app.sendFriendMessage(playerqueue[(1+cur) % 4], MessageChain.create(
-                                [
-                                    Plain("你现在可以吃，要吃吗(y or n)，你有5s")
-                                ]
-                            ))
-                            await asyncio.sleep(5)
-                            chi_queue[(1+cur)%4]=False
-                            await app.sendFriendMessage(playerqueue[(i + cur) % 4], MessageChain.create(
-                                [
-                                    Plain("时间到")
-                                ]
-                            ))
-                    if True in chi_queue:
-                        await asyncio.sleep(5)  ####等待5s，看看有没有人吃
-                        if chi_queue[cur] == True:
-                            await app.sendFriendMessage(playerqueue[cur], MessageChain.create(
-                                [
-                                    Plain("现在是你的出牌阶段,你的牌是:"),
-                                    Plain(str(playerlist[cur].cards))
-                                ]
-                            ))
-                            chi_queue[cur] =False
-                        else:
-                            temp=cur
                             cur = (cur + 1) % 4  # 没人吃就顺着下去
                             playerlist[cur].cards.append(all_cards.pop())
                             await  app.sendFriendMessage(playerqueue[cur], MessageChain.create([
                                 Plain("现在是你的出牌阶段"),
                                 Plain("您现在的手牌是(最右边的那张是新摸的牌)："),
-                                Plain(str(playerlist[cur].cards))]
-                            ))
-                            chi_queue[temp]=False
-                    else:
-                        cur = (cur + 1) % 4  # 没人碰就顺着下去
-                        playerlist[cur].cards.append(all_cards.pop())
-                        await  app.sendFriendMessage(playerqueue[cur], MessageChain.create([
-                            Plain("现在是你的出牌阶段"),
-                            Plain("您现在的手牌是(最右边的那张是新摸的牌)："),
-                            Plain(str(playerlist[cur].cards))
-                        ]))
-
-
-
-
+                                Plain(str(playerlist[cur].cards))
+                            ]))
 
 
 #### 开始游戏的阶段
@@ -657,13 +488,16 @@ async def initgame(app:GraiaMiraiApplication,group:Group,message:MessageChain):
 
 
 @bcc.receiver("FriendMessage")
-def choose_peng(app:GraiaMiraiApplication,frined:Friend,message:MessageChain):
+async def choose_peng(app:GraiaMiraiApplication,frined:Friend,message:MessageChain):
     global cur
     if run_game==True:
         chose=playerqueue.index(frined.id)
+        print(chose)
         if peng_queue[chose]==True:
+            print(chose)
             message_str=message.asDisplay()
-            if message_str=='n' or 'N':
+            print(message_str)
+            if message_str=='n' or message_str== 'N':
                 peng_queue[chose]=False
             else:
                 out_card=playerlist[cur].outcards.pop()
@@ -673,17 +507,17 @@ def choose_peng(app:GraiaMiraiApplication,frined:Friend,message:MessageChain):
                 playerlist[chose].vice_cards.append(out_card)
                 playerlist[chose].vice_cards.append(out_card)
                 playerlist[chose].vice_cards.sort()
-                cur=chose
+                print(peng_queue[chose])
 
 @bcc.receiver("FriendMessage")
-def choose_chi(app:GraiaMiraiApplication,frined:Friend,message:MessageChain):
+async def choose_chi(app:GraiaMiraiApplication,frined:Friend,message:MessageChain):
     global cur
     if run_game == True:
         chose = playerqueue.index(frined.id)
         if chi_queue[chose] == True:
             message_str = message.asDisplay()
             temp=message_str[0:1]
-            if temp=='n':
+            if temp=='n' or temp=='N':
                 chi_queue[chose]=False
             else:
                 card1=message_str[2:4]
@@ -695,6 +529,14 @@ def choose_chi(app:GraiaMiraiApplication,frined:Friend,message:MessageChain):
                 playerlist[chose].vice_cards.append(card2)
                 playerlist[chose].vice_cards.append(out_card)
                 playerlist[chose].vice_cards.sort()
+
+
+
+
+@bcc.receiver("GroupMessage")
+async def serch_data():
+    pass
+
 
 
 app.launch_blocking()
