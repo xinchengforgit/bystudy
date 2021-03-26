@@ -12,7 +12,7 @@ import json
 import random
 
 # 首先要有一个存放麻将牌的东西
-conn = pymysql.connect(host='localhost', user='root', password='leh20020929', database='bystudy')
+conn = pymysql.connect(host='localhost', user='root', password='', database='bystudy')
 cursor = conn.cursor()
 
 all_cards = []
