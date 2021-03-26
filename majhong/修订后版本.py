@@ -542,7 +542,7 @@ async def choose_chi(app: GraiaMiraiApplication, frined: Friend, message: Messag
                 playerlist[chose].vice_cards.append(out_card)
                 playerlist[chose].vice_cards.sort()
 
-
+####查询玩家信息
 @bcc.receiver("GroupMessage")
 async def serch_data(app: GraiaMiraiApplication, member: Member, group: Group, message: MessageChain):
     message_str = message.asDisplay()
@@ -587,7 +587,7 @@ async def serch_data(app: GraiaMiraiApplication, member: Member, group: Group, m
                 ])
             )
 
-
+####查牌
 @bcc.receiver('FriendMessage')
 async def search_card(friend:Friend,app:GraiaMiraiApplication,message:MessageChain):
     global start_game,run_game
@@ -607,7 +607,7 @@ async def search_card(friend:Friend,app:GraiaMiraiApplication,message:MessageCha
                     Plain("%s 牌还剩下 %d 张" %(message_str,tot))
                 ]
             ))
-
+###查询上局信息
 @bcc.receiver('GroupMessage')
 async def search_last(app:GraiaMiraiApplication,message:MessageChain,group:Group,member:Member):
         message_str=message.asDisplay()
@@ -642,6 +642,45 @@ async def search_last(app:GraiaMiraiApplication,message:MessageChain,group:Group
                         Plain("暂时没有对局信息哦，欢迎开始打麻将")
                     ]
                 ))
+
+
+@bcc.receiver('GroupMessage')
+async def serch_special(app:GraiaMiraiApplication,message:MessageChain,group:Group,member:Member):
+        message_str = message.asDisplay()
+        print(message_str)
+        if message_str=="查询第5局信息@"+str(app.connect_info.account)+" ":
+            id=message_str[3:4]
+            sql='''
+                select * from pfd where id=%d         
+            '''%(int(id))
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            if len(result) != 0:
+                for data in result:
+                    pl1 = data[1]
+                    pl2 = data[2]
+                    pl3 = data[3]
+                    pl4 = data[4]
+                await app.sendGroupMessage(group, MessageChain.create(
+                    [
+                        At(member.id),
+                        Plain(" 上局对局中参与的玩家有: "),
+                        At(int(pl1)),
+                        At(int(pl2)),
+                        At(int(pl3)),
+                        At(int(pl4)),
+                        Plain(" 胜者是: "),
+                        At(int(pl4))
+                    ]
+                ))
+            else:
+                await app.sendGroupMessage(group, MessageChain.create(
+                    [
+                        At(member.id),
+                        Plain("暂时没有该局信息哦，欢迎开始打麻将")
+                    ]
+                ))
+
 
 
 app.launch_blocking()
