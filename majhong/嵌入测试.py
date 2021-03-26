@@ -132,6 +132,10 @@ def is_chi(cur,out_card):
         return True
     return False
 
+
+
+peng_times=[0,0,0,0]
+chi_times=[0,0,0,0]
 hu_queue=[False,False,False,False]
 chi_queue=[False,False,False,False]
 peng_queue=[False,False,False,False]
@@ -354,6 +358,7 @@ async def out_card(app:GraiaMiraiApplication,friend:Friend,message:MessageChain)
                     for i in range(0,3):
                         if is_hu((cur+i)%4,message_str):
                             hu_queue[(cur+i)%4]=True
+                            temp=groupqueue[(cur+i)%4]
                     if hu_queue.count(True):
                             messagechain_hu = MessageChain.create(
                                 [
@@ -366,15 +371,26 @@ async def out_card(app:GraiaMiraiApplication,friend:Friend,message:MessageChain)
                                         At(playerqueue[(i + cur) % 4])
                                     ]))
                             await app.sendGroupMessage(groupqueue[0], messagechain_hu)
-                            s=''
-                            for i in range(0,3):
-                                if hu_queue[(cur+i)%4]==True:
-                                    s=s+str(playerqueue[(cur+i)%4])
                             sql='''
-                                    insert into pfd(
-                                    p1,p2,p3,p4,winner
-                                     )values (%s,%s,%s,%s,%s)
-                                ''' %(str(playerqueue[0]),str(playerqueue[1]),str(playerqueue[2]),str(playerqueue[3]),s)
+                                insert into pfd(p1,p2,p3,p4,winner)
+                                values(%s,%s,%s,%s,%s) 
+                            '''%(str(groupqueue[0]),str(groupqueue[1]),str(groupqueue[2]),str(groupqueue[3]),str(temp))
+                            try:
+                                cursor.execute(sql)
+                                conn.comit()
+                            except:
+                                conn.rollback()
+                            for i in range(0,4):
+                                sql='''
+                                    insert into playdata(name,peng,chi)
+                                    values(%s,%d,%d)
+                                '''%(str(groupqueue[i]),peng_times[i],chi_times[i])
+                                try:
+                                    cursor.execute(sql)
+                                    conn.comit()
+                                except:
+                                    conn.rollback()
+                            ####将数据导入数据库中
 
                         
                             run_game == False
@@ -406,7 +422,9 @@ async def out_card(app:GraiaMiraiApplication,friend:Friend,message:MessageChain)
                            ]
                         ))
                         cur=peng_temp
+                        peng_times[cur]=peng_times[cur]+1
                         peng_queue[cur]=False
+                        ###记录碰的列表
                     else:
 
                         if is_chi((cur+1)%4,message_str):
@@ -432,6 +450,7 @@ async def out_card(app:GraiaMiraiApplication,friend:Friend,message:MessageChain)
                                  ))
                                  chi_queue[(1+cur)%4]=False
                                  cur=(cur+1)%4
+                                 chi_times[cur]=chi_times[cur]+1 ##记录吃的次数的列表
                         else:
                             cur = (cur + 1) % 4  # 没人吃就顺着下去
                             playerlist[cur].cards.append(all_cards.pop())
@@ -534,8 +553,51 @@ async def choose_chi(app:GraiaMiraiApplication,frined:Friend,message:MessageChai
 
 
 @bcc.receiver("GroupMessage")
-async def serch_data():
-    pass
+async def serch_data(app:GraiaMiraiApplication,member:Member,group:Group,message:MessageChain):
+        message_str=message.asDisplay()
+        if message_str[0:5]=='查询玩家@':
+            print(message_str)
+            message_str=message_str[5:-1]
+            print(message_str)
+            print(type(message_str))
+            sql='''
+                select count(*) from pfd where p1=%s or p2=%s or p3=%s or p4=%s 
+            ''' %(message_str,message_str,message_str,message_str)
+            cursor.execute(sql)
+            result = cursor.fetchone()
+            tot=result[0]
+            if tot!=0:
+                sql='''
+                    select count(*) from pfd where winner=%s
+                '''%(message_str)
+                cursor.execute(sql)
+                result=cursor.fetchone()
+                winn=result[0]
+                win_rate=winn/tot ###胜率
+                sql='''
+                    select avg(peng),avg(chi) from playerdata
+                    where name=%s  
+                '''%(message_str)
+                cursor.execute(sql)
+                result=cursor.fetchall()
+                peng=result[0][0]
+                chi=result[0][1]
+                await app.sendGroupMessage(
+                    group,MessageChain.create([
+                        At(member.id),
+                        Plain(" 该玩家的胜率是%f,场均碰的次数是%f,场均吃的次数是%f"%(win_rate,peng,chi))
+                    ])
+                )
+            else:
+                await app.sendGroupMessage(
+                    group,MessageChain.create([
+                        At(member.id),
+                        Plain("好像查询不到该玩家的数据欸，快邀请ta一起来打麻将吧")
+                    ])
+                )
+
+
+
 
 
 
