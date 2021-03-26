@@ -12,7 +12,7 @@ import json
 import random
 
 # 首先要有一个存放麻将牌的东西
-conn = pymysql.connect(host='localhost', user='root', password='leh20020929', database='bystudy')
+conn = pymysql.connect(host='localhost', user='root', password='', database='bystudy')
 cursor = conn.cursor()
 
 all_cards = []
@@ -143,8 +143,8 @@ def is_chi(cur, out_card):
 
 peng_choice=0
 chi_choice=0
-peng_times = [0, 0, 0, 0]
-chi_times = [0, 0, 0, 0]
+peng_times = [0, 0, 0, 0] ###记录玩家吃的次数
+chi_times = [0, 0, 0, 0]  ###记录玩家碰的次数
 hu_queue = [False, False, False, False]  ###判断接收胡牌玩家的指令
 chi_queue = [False, False, False, False]  ###判断接收吃的玩家的指令
 peng_queue = [False, False, False, False]  ###判断接收碰的玩家的指令
@@ -387,11 +387,12 @@ async def out_card(app: GraiaMiraiApplication, friend: Friend, message: MessageC
                     print((i + cur) % 4)
                     await asyncio.sleep(15)
                     if peng_choice==0:
-                        await app.sendFriendMessage((playerqueue[(i + cur) % 4], MessageChain.create(
+                        peng_queue[peng_temp]=False
+                        await app.sendFriendMessage(playerqueue[peng_temp], MessageChain.create(
                             [
                                 Plain("碰的时间到，你现在不能打出碰的命令了:")
                             ]
-                            )))
+                            ))
                     # peng_queue[(i+cur)%4]=False
                     # await app.sendFriendMessage(playerqueue[(i+cur)%4],MessageChain.create(
                     #     [
@@ -422,11 +423,12 @@ async def out_card(app: GraiaMiraiApplication, friend: Friend, message: MessageC
                     ))
                     await asyncio.sleep(15)
                     if chi_choice==0:
-                        await app.sendFriendMessage((playerqueue[(i + cur) % 4], MessageChain.create(
+                        chi_queue[(1+cur)%4]=False
+                        await app.sendFriendMessage(playerqueue[(1 + cur) % 4], MessageChain.create(
                             [
                                 Plain("吃的时间到，你现在不能打出吃的命令了:")
                             ]
-                        )))
+                        ))
                 # chi_queue[(1+cur)%4]=False,这个地方需要修改
                 # await app.sendFriendMessage(playerqueue[(1 + cur) % 4], MessageChain.create(
                 #     [
@@ -613,7 +615,7 @@ async def search_card(friend:Friend,app:GraiaMiraiApplication,message:MessageCha
             print(message_str)
             num=playerqueue.index(friend.id)
             tot=0
-            for i in range(0,3):
+            for i in range(1,4):
                 tot=tot+playerlist[(num+i)%4].cards.count(message_str)
             tot=tot+all_cards.count(message_str)
             await app.sendFriendMessage(friend,MessageChain.create(
