@@ -2,3 +2,4 @@ create
 
 test
 
+这是一个测试git指令的文件，如果需要查看majhong的说明文档，请务必查看majhong里面的必读说明QAQ(
